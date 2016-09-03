@@ -28,7 +28,9 @@ module.exports.run = function (rootPath, done, error) {
             error(err);
         } else {
             var templatesToCreate = [],
-                posts = [];
+                posts = [],
+                pages = [];
+
 
             files.forEach(function (file) {
                 var fileData = JSON.parse(fs.readFileSync(file, "utf8"));
@@ -43,6 +45,8 @@ module.exports.run = function (rootPath, done, error) {
                 var tagClasses = tags.getTagClasses(fileData.tags);
 
                 var metaData = {
+
+                    slug :fileData.slug,
                     title: fileData.title,
                     body: resolvePaths.resolve(fileData.body, ".."),
                     url: "../" + fileData.slug + "/",
@@ -57,6 +61,8 @@ module.exports.run = function (rootPath, done, error) {
                 if (fileData.date && fileData.template === "post.hbs") {
                     posts.push(metaData);
                 }
+
+                pages.push(metaData);
 
                 // post class
                 var bodyClass = "post-template";
@@ -93,8 +99,11 @@ module.exports.run = function (rootPath, done, error) {
 
             if (templatesToCreate.length) {
                 var promises = [];
+
                 templatesToCreate.forEach(function (templateToCreate) {
+                    // templatesToCreate.templateData.post.posts = posts;
                     _.extend(templateToCreate.templateData.post, {
+                        pages : pages,
                         site: siteData,
                         allDates: dates.getAllDatesAsLinks("..", posts),
                         allTags: tags.getAllTagsAsLinks("..", posts)
